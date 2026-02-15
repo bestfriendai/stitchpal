@@ -92,3 +92,24 @@ MIT
 ---
 
 Made with ❤️ for crafters
+
+## API Configuration
+
+### Environment Variables
+
+Create a `.env` file in the project root:
+
+```bash
+# Stitching/Craft API (optional - for pattern sync)
+STITCH_API_KEY=your_stitch_api_key
+STITCH_API_URL=https://api.stitchpal.com/v1
+```
+
+### RevenueCat Configuration
+
+1. Create an account at [RevenueCat.com](https://revenuecat.com)
+2. Create products in App Store Connect / Google Play Console:
+   - Monthly: $2.99/month - `stitchpal_monthly`
+   - Annual: $14.99/year - `stitchpal_annual`
+3. Configure products in RevenueCat dashboard
+4. Add your API key to `src/services/purchases.ts`

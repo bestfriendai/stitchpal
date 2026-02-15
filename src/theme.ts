@@ -42,6 +42,11 @@ export const colors = {
     brand: '#E88B6A',
     brandLight: '#C45D3E',
     brandDark: '#FFAD90',
+    // Semantic colors for dark mode
+    destructive: '#EF5B4C',
+    success: '#5CB88A',
+    warning: '#F0B84D',
+    info: '#6B9DD5',
   }
 };
 

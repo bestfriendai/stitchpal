@@ -1,0 +1,13 @@
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, arch:arm64, id:1D601772-5EF1-458B-A549-79FF99418415, OS:18.2, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:x86_64, id:1D601772-5EF1-458B-A549-79FF99418415, OS:18.2, name:iPhone 16 Pro }
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, arch:arm64, id:1D601772-5EF1-458B-A549-79FF99418415, OS:18.2, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:x86_64, id:1D601772-5EF1-458B-A549-79FF99418415, OS:18.2, name:iPhone 16 Pro }
+** BUILD FAILED **
+
+
+The following build commands failed:
+	PhaseScriptExecution [CP]\ Check\ Pods\ Manifest.lock /Users/iamabillionaire/Library/Developer/Xcode/DerivedData/StitchPal-dfmnusbgophjxsgwnlxqjaarluih/Build/Intermediates.noindex/StitchPal.build/Debug-iphonesimulator/StitchPal.build/Script-08A4A3CD28434E44B6B9DE2E.sh (in target 'StitchPal' from project 'StitchPal')
+	Building project StitchPal with scheme StitchPal and configuration Debug
+(2 failures)
