@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -7,19 +7,36 @@ import {
   useColorScheme,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, radius, fontSize, fontWeight, shadows } from '../../src/theme';
+
+interface Project {
+  id: string;
+  name: string;
+  patternName: string;
+  yarnType: string;
+  status: 'active' | 'paused' | 'completed';
+  progress: number;
+  startDate: string;
+  lastWorked: string;
+  thumbnail: string;
+  hoursWorked?: number;
+}
 
 interface Stats {
   totalProjects: number;
   completedProjects: number;
   activeProjects: number;
   totalHoursWorked: number;
-  yarnUsed: number; // in skeins
+  yarnUsed: number;
   patternsCompleted: number;
   currentStreak: number;
   longestStreak: number;
-  weeklyData: number[]; // Last 7 days
+  weeklyData: number[];
 }
+
+const PROJECTS_KEY = '@stitchpal_projects';
+const STREAK_KEY = '@stitchpal_streak';
 
 export default function StatsScreen() {
   const insets = useSafeAreaInsets();
@@ -27,16 +44,85 @@ export default function StatsScreen() {
   const theme = colorScheme === 'dark' ? colors.dark : colors;
   
   const [stats, setStats] = useState<Stats>({
-    totalProjects: 4,
-    completedProjects: 1,
-    activeProjects: 3,
-    totalHoursWorked: 42,
-    yarnUsed: 12,
-    patternsCompleted: 8,
-    currentStreak: 5,
-    longestStreak: 14,
-    weeklyData: [45, 60, 30, 90, 45, 75, 20], // minutes per day
+    totalProjects: 0,
+    completedProjects: 0,
+    activeProjects: 0,
+    totalHoursWorked: 0,
+    yarnUsed: 0,
+    patternsCompleted: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    weeklyData: [0, 0, 0, 0, 0, 0, 0],
   });
+  const [loading, setLoading] = useState(true);
+
+  const loadStats = useCallback(async () => {
+    try {
+      // Load projects to calculate stats
+      const stored = await AsyncStorage.getItem(PROJECTS_KEY);
+      const projects: Project[] = stored ? JSON.parse(stored) : [];
+      
+      // Calculate basic stats from projects
+      const completed = projects.filter(p => p.status === 'completed').length;
+      const active = projects.filter(p => p.status === 'active').length;
+      
+      // Calculate total hours (sum of hoursWorked or estimate from progress)
+      const totalHours = projects.reduce((sum, p) => {
+        return sum + (p.hoursWorked || Math.round(p.progress * 0.5));
+      }, 0);
+      
+      // Estimate yarn used based on completed projects and progress
+      const yarnUsed = projects.reduce((sum, p) => {
+        const progressFactor = p.progress / 100;
+        return sum + Math.round(progressFactor * 2);
+      }, 0);
+      
+      // Load streak data
+      const streakData = await AsyncStorage.getItem(STREAK_KEY);
+      let streak = { current: 0, longest: 0 };
+      if (streakData) {
+        streak = JSON.parse(streakData);
+      }
+      
+      // Calculate weekly data (last 7 days of work)
+      const weeklyData = [0, 0, 0, 0, 0, 0, 0];
+      const today = new Date();
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        // Check if any project was worked on that day
+        const minutes = projects.reduce((sum, p) => {
+          if (p.lastWorked === dateStr) {
+            return sum + 30;
+          }
+          return sum;
+        }, 0);
+        weeklyData[6 - i] = minutes;
+      }
+      
+      setStats({
+        totalProjects: projects.length,
+        completedProjects: completed,
+        activeProjects: active,
+        totalHoursWorked: totalHours,
+        yarnUsed: yarnUsed,
+        patternsCompleted: completed,
+        currentStreak: streak.current,
+        longestStreak: streak.longest,
+        weeklyData,
+      });
+    } catch (e) {
+      console.error('Failed to load stats:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   const maxWeekly = Math.max(...stats.weeklyData);
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
